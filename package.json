@@ -23,7 +23,8 @@
     "watch": "tsx watch src/index.ts",
     "test": "tsx tests/client1.ts",
     "build": "pkgroll --minify --clean-dist",
-    "build:test": "pkgroll --clean-dist"
+    "build:test": "pkgroll --clean-dist",
+    "release": "semantic-release --dry-run"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
