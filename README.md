@@ -4,7 +4,7 @@ A high-performance, modular Node.js/TypeScript toolkit that includes essential r
 
 ## Classes Overview
 
-### `MemoryCache`
+### `Cache`
 > `src/classes/cache.class.ts`
 
 A high-efficiency in-memory cache with support for:
@@ -58,7 +58,7 @@ await readiness.isReady();
 ## Installation
 
 ```bash
-npm install @your-scope/toolkit
+npm install @yogaajs/ytoolkit
 ```
 
 ## License
