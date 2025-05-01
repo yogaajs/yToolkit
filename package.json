@@ -19,11 +19,9 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.cts",
   "scripts": {
-    "start": "tsx src/index.ts",
-    "watch": "tsx watch src/index.ts",
-    "test": "tsx tests/client1.ts",
-    "build": "pkgroll --minify --clean-dist",
-    "build:test": "pkgroll --clean-dist",
+    "test": "tsx tests/memory-cache.ts",
+    "build": "pkgroll --clean-dist",
+    "build:minify": "pkgroll --minify --clean-dist",
     "release": "semantic-release --dry-run"
   },
   "devDependencies": {
@@ -38,8 +36,6 @@
     "semantic-release": "^24.2.3",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3"
-  },
-  "dependencies": {
   },
   "files": [
     "dist"
