@@ -1,4 +1,4 @@
-import { Logger } from '../src/classes/logger.class';
+import { Logger } from '../src/classes/logger';
 
 /**
  * Tests for Readiness class

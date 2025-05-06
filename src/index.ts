@@ -1,4 +1,6 @@
-export * from './classes/logger.class';
-export * from './classes/gate.class';
-export * from './classes/locker.class';
-export * from './classes/memory-cache.class';
+export * as ApiCallDeduplicator from './api/call-deduplicator';
+export * as ApiCallLimiter from './api/call-limiter';
+export * as Gate from './runtime/gate';
+export * as Logger from './runtime/logger';
+export * as Locker from './runtime/locker';
+export * as MemoryCache from './runtime/memory-cache';

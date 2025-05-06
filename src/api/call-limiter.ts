@@ -1,17 +1,26 @@
-// Types definition for rate limiting functionality
+// Types definition
 // ===========================================================
 
-export type RequestWaiting = {
-    resolve: () => void;                   // Function to resolve the promise with a release function
-    reject: (error: Error) => void;        // Function to reject the promise with an error
-};
+namespace ApiCallLimiter {
+    export type Priority = 'high' | 'normal' | 'low';
+    export type Options = {
+        requestsPerSecond: number;
+    };
+    export type RequestWaiting = {
+        resolve: () => void;
+        reject: (error: Error) => void;
+    };
+    export type RequestRunning = {
+        startedAt: number;
+        endedAt: number | null; 
+    };
+    export type RequestOptions = {
+        priority?: Priority;
+        timeoutMs?: number;
+    };
+}
 
-export type RequestRunning = {
-    startedAt: number;              // Timestamp when the request started
-    endedAt: number | null;         // Timestamp when the request ended, or null if still running
-};
-
-// Class definition for rate limiting functionality
+// Class definition
 // ===========================================================
 
 /**
@@ -19,40 +28,41 @@ export type RequestRunning = {
  * to prevent exceeding specified rate limits. This class implements a token bucket
  * algorithm with a fixed rate and burst capacity equal to the rate limit.
  */
-export class CallLimiter {
+class ApiCallLimiter {
     /**
      * Properties related to the rate limit configuration
      */
-    private readonly maxRequestsPerSecond: number;                      // Maximum allowed requests per second (never changes)
-    private readonly reductionNumber: number;                           // Number of requests to reduce the rate limit by
-    private requestsPerSecond: number;                                  // Current rate limit (can be temporarily reduced)
-    private reduceLimitTimeout: NodeJS.Timeout | null = null;           // Timer for restoring rate limit
-    private reduceLimitTimestamp: number = 0;                           // Timestamp when the rate limit was last reduced
+    private readonly maxRequestsPerSecond: number;
+    private readonly reductionNumber: number; 
+    private requestsPerSecond: number;
+    private reduceLimitTimeout: NodeJS.Timeout | null = null;
+    private reduceLimitTimestamp: number = 0;
 
     /**
      * Queue management properties
      */
-    private requestsWaiting: Array<RequestWaiting> = [];                // Queue of pending requests waiting for execution
-    private requestsRunning: Set<RequestRunning> = new Set();   // Map of currently running requests with their metadata
-    private isProcessing = false;                                       // Flag to prevent multiple queue processing loops
+    private requestsHigh: Array<ApiCallLimiter.RequestWaiting> = [];
+    private requestsNormal: Array<ApiCallLimiter.RequestWaiting> = [];
+    private requestsLow: Array<ApiCallLimiter.RequestWaiting> = [];
+    private requestsRunning: Set<ApiCallLimiter.RequestRunning> = new Set();
+    private isProcessing = false;
 
     /**
      * Creates a rate limiter that limits to specified requests per second
-     * @param maxRequestsPerSecond Maximum number of requests allowed per second (example: 50 calls per second)
-     * @param reductionPercentage Percentage of requests to reduce the rate limit (default: 25%, example: 25% = 12.5 calls per second)
-     * @throws Error if maxRequestsPerSecond is not positive
+     * @param requestsPerSecond Maximum number of requests allowed per second (example: 50 calls per second)
+     * @throws Error if requestsPerSecond is not positive
      */
-    constructor(maxRequestsPerSecond: number, reductionPercentage: number = 25) {
-        if (maxRequestsPerSecond <= 0) {
-            throw new Error('maxRequestsPerSecond must be > 0');
+    constructor(options: ApiCallLimiter.Options) {
+        if (options.requestsPerSecond <= 0) {
+            throw new Error('requestsPerSecond must be > 0');
         }
 
         // Constants
-        this.maxRequestsPerSecond = maxRequestsPerSecond;
-        this.reductionNumber = Math.floor(maxRequestsPerSecond * (reductionPercentage / 100));
+        this.maxRequestsPerSecond = options.requestsPerSecond;
+        this.reductionNumber = Math.max(1, Math.floor(options.requestsPerSecond / 10));
 
         // States
-        this.requestsPerSecond = maxRequestsPerSecond;
+        this.requestsPerSecond = options.requestsPerSecond;
     }
 
     /**
@@ -69,7 +79,6 @@ export class CallLimiter {
         // If the rate limit was already reduced within the last second, do nothing
         const timeSinceLastReduction = Date.now() - this.reduceLimitTimestamp;
         if (timeSinceLastReduction < 1_000) {
-            console.warn('Rate limit reduction already within the last second, skipping...');
             return;
         }
         this.reduceLimitTimestamp = Date.now();
@@ -92,24 +101,33 @@ export class CallLimiter {
 
     /**
      * Requests a slot for executing an API call within rate limits
-     * @param timeoutMs Timeout in milliseconds for the request to be completed, 0 for no timeout (default)
+     * @param options Options for the request
+     * @param options.timeoutMs Timeout in milliseconds for the request to be completed (default: 60_000)
+     * @param options.priority Priority of the request, 'high', 'normal', or 'low' (default: 'normal')
      * @returns Promise that resolves with a function to call when the request is complete
      * @throws Error if the request times out or if the rate limiter is in an invalid state
      */
-    public async requestSlot(timeoutMs: number = 0): Promise<() => void> {
-        const timeout = Math.max(0, timeoutMs);
+    public async requestSlot(options: ApiCallLimiter.RequestOptions): Promise<() => void> {
+        const priority = options.priority || 'normal';
+        const timeout = options.timeoutMs ? Math.max(0, options.timeoutMs) : 60_000;
+
         let timeoutHandle: NodeJS.Timeout | null = null;
 
         // Add the request to the queue and wait for it to be processed
         await new Promise<void>((resolve, reject) => {
-            this.requestsWaiting.push({ resolve, reject });
+            if (priority === 'high') {
+                this.requestsHigh.push({ resolve, reject });
+            } else if (priority === 'normal') {
+                this.requestsNormal.push({ resolve, reject });
+            } else {
+                this.requestsLow.push({ resolve, reject });
+            }
             this.processQueue();
 
-            if (timeout > 0) {
-                timeoutHandle = setTimeout(() => {
-                    reject(new Error(`request timeout`));
-                }, timeout);
-            }
+            // Set the timeout to reject the promise if the request takes too long
+            timeoutHandle = setTimeout(() => {
+                reject(new Error(`request timeout`));
+            }, timeout);
         });
 
         // Clear the timeout if it exists
@@ -118,10 +136,11 @@ export class CallLimiter {
         }
 
         // Add the request to the running requests array
-        const request: RequestRunning = { startedAt: Date.now(), endedAt: null };
+        const request: ApiCallLimiter.RequestRunning = { startedAt: Date.now(), endedAt: null };
         this.requestsRunning.add(request);
 
         return () => {
+            // Mark the request as completed
             request.endedAt = Date.now();
         };
     }
@@ -134,49 +153,51 @@ export class CallLimiter {
      * @throws Error if queue processing fails
      */
     private async processQueue(): Promise<void> {
-        if (this.isProcessing) {
-            return; // Prevent multiple concurrent processing
+        // Prevent processing if the queue is empty
+        if ((this.requestsHigh.length + this.requestsNormal.length + this.requestsLow.length) === 0) {
+            return; 
         }
 
-        this.isProcessing = true;
+        // Prevent multiple concurrent processing
+        if (this.isProcessing) {
+            return; 
+        }
 
         try {
+            // Set the processing flag
+            this.isProcessing = true;
+
             // Process as many requests as possible in the queue
-            while (this.requestsWaiting.length > 0) {
+            while (this.requestsHigh.length > 0 || this.requestsNormal.length > 0 || this.requestsLow.length > 0) {
 
                 // Check how many slots are currently available
-                let availableSlots = this.getAvailableSlots();
+                const availableSlots = this.getAvailableSlots();
 
                 if (availableSlots === 0) {
-                    // No available slots, wait for 100ms before checking again
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    // No available slots, wait for 50ms before checking again
+                    await new Promise(resolve => setTimeout(resolve, 50));
                     continue;
                 }
 
-                // Extract the requests from the queue
+                // Get the next request from the queue
                 for (let i = 0; i < availableSlots; i++) {
-                    const request = this.requestsWaiting.shift();
+                    // Process requests in priority order: high, then normal, then low
+                    const request = this.requestsHigh.shift() || this.requestsNormal.shift() || this.requestsLow.shift();
 
                     // No more requests to process
                     if (!request) { break; }
 
                     // Start processing the request
-                    request.resolve();  
-                     
-                    // Decrement the available slots
-                    availableSlots--;
+                    request.resolve();
                 }
             }
-        } catch (error) {
-            console.error('Error in rate limiter queue processing:', error);
-        }
 
-        // Reset processing flag
-        this.isProcessing = false;
-        
-        // If new requests were added while we were processing, start again
-        if (this.requestsWaiting.length > 0) {
-            this.processQueue();
+        } finally { 
+            // Reset processing flag
+            this.isProcessing = false;
+            
+            // Try to process the queue again (ignored if already processing)
+            setImmediate(() => this.processQueue());
         }
     }
 
@@ -188,7 +209,7 @@ export class CallLimiter {
     private getAvailableSlots(): number {
         const now = Date.now();
         const oneSecondAgo = now - 1_000;
-        const oneMinuteAgo = now - 60_000;
+        const oneMinuteAgo = now - 65_000;  // 1 minute (+5 seconds for the timeout)
 
         // Clean up the running requests
         for (const request of this.requestsRunning) {
@@ -199,7 +220,6 @@ export class CallLimiter {
             }
             // Remove potentially stuck calls (running for more than 1 minute)
             if (request.startedAt && request.startedAt < oneMinuteAgo) {
-                console.warn(`Request has been deleted (timeout)`);
                 this.requestsRunning.delete(request);
                 continue;
             }
@@ -210,3 +230,5 @@ export class CallLimiter {
         return Math.max(0, available); // Ensure we never return a negative number
     }
 }
+
+export default ApiCallLimiter;

@@ -3,7 +3,7 @@
  * It's useful for managing asynchronous initialization processes and ensuring
  * operations only proceed when the gate is open, like a queue waiting to be processed.
  */
-export class Gate {
+class Gate {
     /** Tracks whether the door is open */
     private _isOpen: boolean = false;
     /** Tracks the number of waiters currently waiting for the door to open */
@@ -98,3 +98,5 @@ export class Gate {
         this._waitingCount = 0;         // Reset waiting count when gate closes
     }
 }
+
+export default Gate;
