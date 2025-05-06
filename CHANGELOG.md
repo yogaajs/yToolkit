@@ -1,5 +1,11 @@
 # @yogaajs/ytoolkit
 
+## 1.0.4
+
+### Patch Changes
+
+- 7dd9d95: Renamed classes and reorganized folders
+
 ## 1.0.3
 
 ### Patch Changes
