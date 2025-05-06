@@ -1,7 +1,7 @@
 {
-  "name": "@yogaajs/ytoolkit",
+  "name": "ytoolkit",
   "version": "1.0.2",
-  "description": "Personnal toolkit from YogaaJS",
+  "description": "Toolkit that includes essential runtime classes",
   "license": "MIT",
   "author": {
     "name": "Yogaa",
