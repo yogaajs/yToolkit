@@ -1,26 +1,37 @@
 {
   "compilerOptions": {
+		"outDir": "dist",
     "target": "es2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"],
-      "#/*": ["src/*"]
-    },
     "strict": true,
     "declaration": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "sourceMap": false,
-    "lib": ["ES2022"],
-    "types": ["node"]
+    "types": ["node"],
+		"newLine": "lf",
+		"stripInternal": true,
+		"noImplicitReturns": true,
+		"noImplicitOverride": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedIndexedAccess": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"noUncheckedSideEffectImports": true,
+		"noEmitOnError": true,
+		"useDefineForClassFields": true,
+		"forceConsistentCasingInFileNames": true,
+    "lib": [
+			"DOM",
+			"DOM.Iterable",
+			"ES2023" // Node.js 20+
+		],
   },
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
   ],
   "include": [
     "src/**/*",

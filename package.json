@@ -2,18 +2,20 @@
   "name": "@yogaajs/ytoolkit",
   "version": "1.0.0",
   "description": "Personnal toolkit from YogaaJS",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "author": {
     "name": "Yogaa",
-    "email": "yogaa.dev@gmail.com"
+    "email": "contact@yogaa.dev"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/yogaajs/yToolkit.git"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "tag": "latest"
+    "access": "public"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -22,18 +24,14 @@
     "test": "tsx tests/memory-cache.ts",
     "build": "pkgroll --clean-dist",
     "build:minify": "pkgroll --minify --clean-dist",
-    "release": "semantic-release --dry-run"
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
   },
   "devDependencies": {
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/commit-analyzer": "^13.0.1",
-    "@semantic-release/exec": "^7.0.3",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^11.0.1",
-    "@semantic-release/release-notes-generator": "^14.0.3",
+    "@changesets/cli": "^2.29.3",
     "@types/node": "^22.14.1",
     "pkgroll": "^2.11.2",
-    "semantic-release": "^24.2.3",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3"
   },

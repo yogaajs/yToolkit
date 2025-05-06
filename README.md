@@ -30,8 +30,8 @@ cache.add("user:123", { id: 123 });
 // Set/update item
 cache.set("user:123", { id: 123, name: "John" });
 
-// Get item (with optional sliding expiration)
-const user = cache.get("user:123", true); // true = refresh TTL on access
+// Get item
+const user = cache.get("user:123");
 
 // Check if item exists
 if (cache.has("user:123")) {
@@ -88,14 +88,17 @@ Minimal and colorful structured logger with levels:
 
 **Usage:**
 ```ts
-const logger = new Logger("[MyModule]");
-logger.info("Loaded successfully");
+const logger = new Logger("[MyModule]", true); // true = enable debug logs
+logger.info("Loaded successfully"); // Logs: "[MyModule] Loaded successfully"
+
+logger.debug("Debug message activated"); // Logs: "[MyModule] Debug message activated"
+logger.debug("Debug message deactivated"); // Ignored
 ```
 
 ---
 
-### `Door`
-> `src/classes/door.class.ts`
+### `Gate`
+> `src/classes/gate.class.ts`
 
 Simple async gate used to control access based on open/closed state:
 
@@ -105,13 +108,13 @@ Simple async gate used to control access based on open/closed state:
 
 **Usage:**
 ```ts
-const door = new Door();
+const gate = new Gate();
 
 const database = db.connect().then(() => {
-    door.open();
+    gate.open();
 });
 
-await door.isOpen(); // Wait until door is open
+await gate.isOpen(); // Wait until gate is open
 // Execute logic...
 ```
 

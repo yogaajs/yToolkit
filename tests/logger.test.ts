@@ -3,7 +3,7 @@ import { Logger } from '../src/classes/logger.class';
 /**
  * Tests for Readiness class
  */
-async function testReadinessClass() {
+async function testLoggerClass() {
     console.log('Running Readiness class tests...');
     
     // Initialize readiness class
@@ -27,6 +27,6 @@ async function testReadinessClass() {
 }
 
 // Run the tests
-testReadinessClass().catch(error => {
+testLoggerClass().catch(error => {
   console.error('❌ Test failed:', error);
 }); 

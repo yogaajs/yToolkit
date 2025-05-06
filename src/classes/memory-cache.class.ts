@@ -47,7 +47,7 @@ export class MemoryCache {
      * Returns the number of items in the cache
      * @returns The number of items in the cache
      */
-    public size(): number {
+    public currentSize(): number {
         return this.store.size;
     }
 
@@ -55,7 +55,7 @@ export class MemoryCache {
      * Returns the current memory usage of the cache
      * @returns The current memory usage of the cache in megabytes
      */
-    public currentMemoryUsage(): number {
+    public currentUsage(): number {
         return this.currentCacheSizeBytes / 1024 / 1024;
     }
 
