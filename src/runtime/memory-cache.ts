@@ -2,7 +2,7 @@
  * In-memory cache with size limitations and automatic expiration
  * Provides efficient storage with automatic cleanup mechanisms
  */
-class MemoryCache {
+export class MemoryCache {
     /** Name of the cache, used for logging */
     private name: string;
 
@@ -298,5 +298,3 @@ class MemoryCache {
         }
     }
 }
-
-export default MemoryCache;

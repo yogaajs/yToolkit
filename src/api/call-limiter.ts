@@ -1,7 +1,7 @@
 // Types definition
 // ===========================================================
 
-namespace ApiCallLimiter {
+export namespace ApiCallLimiter {
     export type Priority = 'high' | 'normal' | 'low';
     export type Options = {
         requestsPerSecond: number;
@@ -28,7 +28,7 @@ namespace ApiCallLimiter {
  * to prevent exceeding specified rate limits. This class implements a token bucket
  * algorithm with a fixed rate and burst capacity equal to the rate limit.
  */
-class ApiCallLimiter {
+export class ApiCallLimiter {
     /**
      * Properties related to the rate limit configuration
      */
@@ -230,5 +230,3 @@ class ApiCallLimiter {
         return Math.max(0, available); // Ensure we never return a negative number
     }
 }
-
-export default ApiCallLimiter;

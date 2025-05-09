@@ -1,7 +1,7 @@
 // Types definition
 // ===========================================================
 
-namespace ApiCallDeduplicator {
+export namespace ApiCallDeduplicator {
     export type Options = {
         timeout?: number;
     };
@@ -19,7 +19,7 @@ namespace ApiCallDeduplicator {
  * CallDeduplicator class that prevents duplicate calls by caching each call
  * for in-flight requests with the same key, allowing efficient reuse of results
  */
-class ApiCallDeduplicator {
+export class ApiCallDeduplicator {
     /** Map of active requests indexed by their unique keys */
     private requests = new Map<string, ApiCallDeduplicator.Call>();
 
@@ -135,5 +135,3 @@ class ApiCallDeduplicator {
         return () => clearTimeout(timeoutId);
     }
 }
-
-export default ApiCallDeduplicator;

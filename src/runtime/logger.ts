@@ -2,7 +2,7 @@
  * Simple logging utility class that prefixes all log messages
  * Provides standard logging methods with consistent formatting
  */
-class Logger {
+export class Logger {
     /** Prefix string to prepend to all log messages */
     private readonly _prefix: string;
     
@@ -55,5 +55,3 @@ class Logger {
         }
     }
 }
-
-export default Logger;
