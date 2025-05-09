@@ -1,5 +1,11 @@
 # @yogaajs/ytoolkit
 
+## 1.1.0
+
+### Minor Changes
+
+- b0bb45f: correct exports
+
 ## 1.0.4
 
 ### Patch Changes
